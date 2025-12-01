@@ -26,8 +26,10 @@ const io = new Server(server, {
 
 // Quand un utilisateur se connecte
 io.on("connection", (socket) => { 
-    // Affiche son id
-  console.log("1 utilisateur vient de se connecter", socket.id); 
+  socket.on("bouton", (data) =>{
+    console.log(data, socket.id)
+  socket.broadcast.emit("bouton_reponse",data);
+  })
 });
 
 // Le serveur écoute sur le port 3000
