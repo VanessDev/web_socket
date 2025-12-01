@@ -17,7 +17,7 @@ function App() {
   // Stocke le nom de l'utilisateur
   const [name, setName] = useState(''); 
   const [counter,setCounter] = useState(0);
-  const [inputcounter, set inputcounter] = useState(0);
+  const [inputcounter, setinputcounter] = useState(0);
 
   // Fonction du bouton Test
   function btnClick() { 
