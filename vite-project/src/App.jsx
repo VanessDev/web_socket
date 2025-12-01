@@ -20,7 +20,7 @@ function App() {
   // Valeur saisie dans l'input pour envoyer un nombre
   const [inputCounter, setInputCounter] = useState("");
 
-  // Bouton "Test" (exercice précédent)
+  // Bouton "Test" 
   function btnClick() {
     socket.emit("bouton", "coucou les gens");
   }
@@ -87,6 +87,8 @@ function App() {
   // Affichage du composant
   return (
     <>
+
+    <h2>Compteur</h2>
       {/* Nom */}
       <input
         type="text"
@@ -110,7 +112,7 @@ function App() {
       {/* Incrément (+1) */}
       <button onClick={incrementer}>Incrementer (+1)</button>
 
-      <h1>Exo websocket</h1>
+      <h2>Tchat</h2>
 
       {/* Bouton test de l'exercice précédent */}
       <button onClick={btnClick}>Test</button>
