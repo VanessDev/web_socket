@@ -1,115 +1,137 @@
 // Importe les hooks React
-import { useEffect, useState } from "react"; 
+import { useEffect, useState } from "react";
 // Importe le fichier CSS
-import "./App.css"; 
+import "./App.css";
 // Importe le client Socket.io
-import { io } from "socket.io-client"; 
-
+import { io } from "socket.io-client";
 
 // Se connecte au serveur Socket.io
-const socket = io("http://localhost:3000"); 
+const socket = io("http://localhost:3000");
 
-function App() { 
-  // Stocke le message écrit
-  const [message, setMessage] = useState(""); 
-  // Stocke tous les messages
-  const [messages, setMessages] = useState([]); 
+function App() {
+  // Stocke le message écrit (chat)
+  const [message, setMessage] = useState("");
+  // Stocke tous les messages du chat
+  const [messages, setMessages] = useState([]);
   // Stocke le nom de l'utilisateur
-  const [name, setName] = useState(''); 
-  const [counter,setCounter] = useState(0);
-  const [inputcounter, setinputcounter] = useState(0);
+  const [name, setName] = useState("");
+  // Stocke le total partagé reçu du serveur
+  const [counter, setCounter] = useState(0);
+  // Valeur saisie dans l'input pour envoyer un nombre
+  const [inputCounter, setInputCounter] = useState("");
 
-  // Fonction du bouton Test
-  function btnClick() { 
-    // Envoie un message au serveur
-    socket.emit("bouton", "coucou les gens"); 
+  // Bouton "Test" (exercice précédent)
+  function btnClick() {
+    socket.emit("bouton", "coucou les gens");
   }
 
+  // Bouton "Envoyer le nombre" (envoie la valeur de inputCounter au serveur)
+  function envoyerNombre() {
+    const value = Number(inputCounter);
+    if (isNaN(value)) return;
+    // on envoie le nombre + le nom au serveur
+    socket.emit("send_number", { name, value });
+    setInputCounter("");
+  }
 
-// S'exécute au chargement du composant
-  useEffect(() => { 
+  // Bouton "Incrementer" (demande au serveur d'ajouter 1 au total)
+  function incrementer() {
+    socket.emit("increment_number", { name });
+  }
 
-// Écoute la réponse du serveur
-    socket.on("bouton_reponse", (data) => { 
-      // Affiche la réponse dans la console
-      console.log(data); 
-    });
-
-    // Écoute les messages reçus
-    socket.on("message_reponse", (data) => { 
-      // Ajoute le message à la liste
-      setMessages((prev) => [...prev, data[0] + ": " + data[1]]); 
-    });
-
-
-    // Nettoyage à la fermeture du composant
-    return () => { 
-      // Supprime l'écoute du bouton
-      socket.off("bouton_reponse"); 
-      // Supprime l'écoute des messages
-      socket.off("message_reponse"); 
-    };
-  }, []); // Le useEffect s'exécute une seule fois
-
-
-  // Fonction du bouton Envoyer
-  function envoyer() { 
-    // Vérifie si le message est vide (⚠ petite erreur ici)
-    if (message.trim === "") { 
-      // Arrête la fonction
-      return; 
+  // Bouton "Envoyer" du chat
+  function envoyerMessage() {
+    if (message.trim() === "") {
+      return;
     }
 
-    // Ajoute mon message à l'écran
-    setMessages((prev) => [...prev, "Moi:" + message]); 
+    // Ajoute mon message en local
+    setMessages((prev) => [...prev, "Moi: " + message]);
 
-    // Envoie le message au serveur
-    socket.emit("message", message); 
-    // Envoie le nom + message
-    socket.emit("message", [name, message]); 
+    // Envoie le message au serveur (avec le nom)
+    socket.emit("message", [name, message]);
+
+    setMessage("");
   }
 
+  // S'exécute au chargement du composant
+  useEffect(() => {
+    // Réponse du bouton "Test"
+    socket.on("bouton_reponse", (data) => {
+      console.log(data);
+    });
+
+    // Messages reçus du serveur (chat)
+    socket.on("message_reponse", (data) => {
+      setMessages((prev) => [...prev, data[0] + ": " + data[1]]);
+    });
+
+    // Mise à jour du compteur partagé
+    socket.on("counter_update", (data) => {
+      // data = { total, from }
+      setCounter(data.total);
+      setMessages((prev) => [
+        ...prev,
+        `Serveur: total = ${data.total} (modifié par ${data.from})`,
+      ]);
+    });
+
+    // Nettoyage à la fermeture du composant
+    return () => {
+      socket.off("bouton_reponse");
+      socket.off("message_reponse");
+      socket.off("counter_update");
+    };
+  }, []);
+
   // Affichage du composant
-  return ( 
+  return (
     <>
-      <input type="text"
-      // Valeur du champ = name
-        value={name} 
-        // Met à jour le name
-        onChange={(e) => setName(e.target.value)} 
-      />
-
-      <div>{counter}</div>
-      <input type="number"
-      value={inputcounter}
-      onChange={(e) => setInputCounter(e.target.value)}
-      />
-
-      <button onClick={incrementer}>Incrementer</button>
-
-      <h1>Exo websocket</h1> // Titre de la page
-
-      <button onClick={btnClick}>Test</button> // Bouton qui envoie "coucou les gens"
-
+      {/* Nom */}
       <input
         type="text"
-        // Valeur du champ = message
-        value={message} 
-         // Met à jour le message
-        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Ton nom"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
       />
 
-      <button onClick={envoyer}>Envoyer</button> // Bouton d'envoi du message
+      {/* Affichage du total partagé */}
+      <h2>Total partagé : {counter}</h2>
 
+      {/* Envoi d'un nombre de départ */}
+      <input
+        type="number"
+        placeholder="Nombre à envoyer"
+        value={inputCounter}
+        onChange={(e) => setInputCounter(e.target.value)}
+      />
+      <button onClick={envoyerNombre}>Envoyer le nombre</button>
+
+      {/* Incrément (+1) */}
+      <button onClick={incrementer}>Incrementer (+1)</button>
+
+      <h1>Exo websocket</h1>
+
+      {/* Bouton test de l'exercice précédent */}
+      <button onClick={btnClick}>Test</button>
+
+      {/* Chat */}
+      <input
+        type="text"
+        placeholder="Ton message"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      <button onClick={envoyerMessage}>Envoyer</button>
+
+      {/* Liste des messages */}
       <div>
-        // Parcourt tous les messages
-        {messages.map((message, index) => ( 
-          // Affiche chaque message
-          <div key={index}>{message}</div> 
+        {messages.map((message, index) => (
+          <div key={index}>{message}</div>
         ))}
       </div>
     </>
   );
 }
 
-export default App; 
+export default App;
