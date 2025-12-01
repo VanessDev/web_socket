@@ -17,20 +17,24 @@ function App() {
       console.log(data);
     });
 
+    socket.on("message_reponse", (data) => {
+      setMessages((prev) => [...prev, "Autre: " + data]);
+    });
+
     return () => {
       socket.off("bouton_reponse");
+      socket.off("message_reponse");
     };
   }, []);
 
   function envoyer() {
-    if(message.trim === "") 
-    {
-      return
+    if (message.trim === "") {
+      return;
     }
 
     setMessages((prev) => [...prev, "Moi:" + message]);
-    
-      
+
+    socket.emit("message", message);
   }
 
   return (
