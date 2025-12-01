@@ -65,14 +65,18 @@ function App() {
 
     // Envoie le message au serveur
     socket.emit("message", message); 
-    socket.emit("message", [name, message]); // Envoie le nom + message
+    // Envoie le nom + message
+    socket.emit("message", [name, message]); 
   }
 
-  return ( // Affichage du composant
+  // Affichage du composant
+  return ( 
     <>
       <input type="text"
-        value={name} // Valeur du champ = name
-        onChange={(e) => setName(e.target.value)} // Met à jour le name
+      // Valeur du champ = name
+        value={name} 
+        // Met à jour le name
+        onChange={(e) => setName(e.target.value)} 
       />
 
       <div>{counter}</div>
@@ -89,19 +93,23 @@ function App() {
 
       <input
         type="text"
-        value={message} // Valeur du champ = message
-        onChange={(e) => setMessage(e.target.value)} // Met à jour le message
+        // Valeur du champ = message
+        value={message} 
+         // Met à jour le message
+        onChange={(e) => setMessage(e.target.value)}
       />
 
       <button onClick={envoyer}>Envoyer</button> // Bouton d'envoi du message
 
       <div>
-        {messages.map((message, index) => ( // Parcourt tous les messages
-          <div key={index}>{message}</div> // Affiche chaque message
+        // Parcourt tous les messages
+        {messages.map((message, index) => ( 
+          // Affiche chaque message
+          <div key={index}>{message}</div> 
         ))}
       </div>
     </>
   );
 }
 
-export default App; // Exporte le composant
+export default App; 
